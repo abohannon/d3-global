@@ -44,29 +44,38 @@ class Chart {
     console.log(features)
 
     // chart dimensions
-    const width = '100%'
-    const height = 900
-    const padding = 24
+    const width = window.innerWidth - 10
+    const height = window.innerHeight - 10
 
     // create svg canvas
     const svg = d3.select('svg')
       .attr('width', width)
       .attr('height', height)
-      .style('padding', padding)
-      .style('background-color', 'lightgrey')
+      .style('background-color', 'black')
+      .call(d3.zoom().on('zoom', () => {
+        svg.attr('transform', d3.event.transform)
+      }))
+      .append('g')
 
-    const projection = d3.geoOrthographic()
+    // const circle = svg.append('circle')
+    //   .attr('cx', document.body.clientWidth / 2)
+    //   .attr('cy', document.body.clientHeight / 2)
+    //   .attr('r', 50)
+    //   .style('fill', '#B8DEE6')
+
+    const projection = d3.geoMercator()
+      .scale(200)
+      .translate([width / 2, height / 2])
 
     const path = d3.geoPath()
       .projection(projection)
 
-    // Join the FeatureCollection's features array to path elements
-    const u = d3.select('svg')
-      .selectAll('path')
+    const land = svg.selectAll('path')
       .data(map.features)
       .enter()
       .append('path')
       .attr('d', path)
+      .attr('fill', (d) => 'rgb(155, 249, 136)')
   }
   // initialize the chart by executing fetch
   initialize () {
