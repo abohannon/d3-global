@@ -38,10 +38,11 @@ class Chart {
   // render the data
   renderData (data) {
     const map = data[0]
-    const features = data[1]
+    const meteor = data[1]
 
-    console.log(map)
-    console.log(features)
+    console.log('map', map)
+    console.log('features', meteor)
+    console.log(meteor.features[0].properties)
 
     // chart dimensions
     const width = window.innerWidth - 10
@@ -51,17 +52,10 @@ class Chart {
     const svg = d3.select('svg')
       .attr('width', width)
       .attr('height', height)
-      .style('background-color', 'black')
       .call(d3.zoom().on('zoom', () => {
         svg.attr('transform', d3.event.transform)
       }))
       .append('g')
-
-    // const circle = svg.append('circle')
-    //   .attr('cx', document.body.clientWidth / 2)
-    //   .attr('cy', document.body.clientHeight / 2)
-    //   .attr('r', 50)
-    //   .style('fill', '#B8DEE6')
 
     const projection = d3.geoMercator()
       .scale(200)
@@ -76,6 +70,15 @@ class Chart {
       .append('path')
       .attr('d', path)
       .attr('fill', (d) => 'rgb(155, 249, 136)')
+
+    const meteors = svg.selectAll('circle')
+      .data(meteor.features)
+      .enter()
+      .append('circle')
+      .attr('fill', 'blue')
+      .attr('cx', (d) => projection([d.properties.reclong, d.properties.reclat])[0])
+      .attr('cy', (d) => projection([d.properties.reclong, d.properties.reclat])[1])
+      .attr('r', (d) => d.properties.mass / 100000)
   }
   // initialize the chart by executing fetch
   initialize () {
