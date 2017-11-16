@@ -42,7 +42,6 @@ class Chart {
 
     console.log('map', map)
     console.log('features', meteor)
-    console.log(meteor.features[0].properties)
 
     // chart dimensions
     const width = window.innerWidth - 10
@@ -57,9 +56,22 @@ class Chart {
       }))
       .append('g')
 
+    // tooltip
+    const tooltip = d3.select('body').append('div')
+      .attr('class', 'tooltip')
+
+    // map title
+    svg.append('text')
+      .attr('class', 'map-title')
+      .attr('text-anchor', 'middle')
+      .attr('x', width / 2)
+      .attr('y', 0)
+      .text(`Map of Global Meteorite Landings, By Mass`)
+
+    // create projection and path
     const projection = d3.geoMercator()
       .scale(200)
-      .translate([width / 2, height / 2])
+      .translate([width / 2, height / 2 + 50])
 
     const path = d3.geoPath()
       .projection(projection)
@@ -69,16 +81,51 @@ class Chart {
       .enter()
       .append('path')
       .attr('d', path)
-      .attr('fill', (d) => 'rgb(155, 249, 136)')
+      .attr('fill', (d) => '#fff')
+
+    const massMax = d3.max(meteor.features, d => parseFloat(d.properties.mass))
+    const massMin = d3.min(meteor.features, d => parseFloat(d.properties.mass))
+
+    const meteorScale = d3.scaleSqrt()
+      .domain([massMin, massMax])
+      .range([1, 30])
+
+    function handleClick () {
+      console.log(this)
+      d3.select(this)
+        .attr('class', 'hidden')
+    }
 
     const meteors = svg.selectAll('circle')
       .data(meteor.features)
       .enter()
       .append('circle')
-      .attr('fill', 'blue')
+      .attr('class', 'circle')
+      .attr('fill', 'rgba(32, 25, 143, 0.8)')
+      .attr('stroke', '#000')
+      .attr('stroke-width', '0.3')
       .attr('cx', (d) => projection([d.properties.reclong, d.properties.reclat])[0])
       .attr('cy', (d) => projection([d.properties.reclong, d.properties.reclat])[1])
-      .attr('r', (d) => d.properties.mass / 100000)
+      .attr('r', (d) => meteorScale(d.properties.mass))
+      .on('click', handleClick)
+      .on('mouseover', (d, i) => {
+        tooltip
+          .transition()
+          .style('opacity', 1)
+        tooltip
+          .style('left', (d3.event.pageX) + 'px')
+          .style('top', (d3.event.pageY) + 'px')
+          .html(`
+            <p><b>Name: </b>${d.properties.name}</p>
+            <p><b>Mass: </b>${(d.properties.mass * 0.00220462).toFixed(3).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')} lbs</p>
+            <p><b>Year: </b>${d.properties.year.split('-').splice(0, 1)}</p>
+            `)
+      })
+      .on('mouseout', () => {
+        tooltip
+          .transition()
+          .style('opacity', 0)
+      })
   }
   // initialize the chart by executing fetch
   initialize () {

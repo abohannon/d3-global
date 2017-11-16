@@ -5,3 +5,29 @@ body {
 svg {
   box-sizing: border-box;
 }
+
+.tooltip {
+  width: auto;
+  height: auto;
+  padding: 8px 16px;
+  border-radius: 4px;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.38);
+  background-color: rgba(255, 255, 255, 0.75);
+  position: absolute;
+  z-index: 999;
+  pointer-events: none;
+}
+
+.circle {
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+
+.map-title {
+  fill: #fff;
+  font-weight: 200;
+  font-size: 48px;
+}
